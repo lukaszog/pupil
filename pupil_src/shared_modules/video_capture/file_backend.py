@@ -111,6 +111,7 @@ class File_Source(Playback_Source, Base_Source):
             self._initialised = False
             return
 
+        source_path = "http://192.168.1.4:9999"
         self.container = av.open(str(source_path))
 
         try:
@@ -154,33 +155,44 @@ class File_Source(Playback_Source, Base_Source):
             logger.error(
                 "Videofile pts are not evenly spaced, pts to index conversion may fail and be inconsitent."
             )
-
+        print("AVG RATE", avg_rate)
+        print("Duration: ", self.container.duration)
+        frame_rate = 90.0
+        timestamps = [
+                 i / frame_rate
+                 for i in range(
+                     int(self.container.duration / av.time_base * frame_rate) + 100
+                 )
+          ]
+        print("Timestamps, ", timestamps)
         # load/generate timestamps.
-        timestamps_path, ext = os.path.splitext(source_path)
-        timestamps_path += "_timestamps.npy"
-        try:
-            self.timestamps = np.load(timestamps_path)
-        except IOError:
-            logger.warning(
-                "did not find timestamps file, making timetamps up based on fps and frame count. Frame count and timestamps are not accurate!"
-            )
-            frame_rate = float(avg_rate)
-            self.timestamps = [
-                i / frame_rate
-                for i in range(
-                    int(self.container.duration / av.time_base * frame_rate) + 100
-                )
-            ]  # we are adding some slack.
-        else:
-            logger.debug(
-                "Auto loaded %s timestamps from %s"
-                % (len(self.timestamps), timestamps_path)
-            )
-        assert isinstance(
-            self.timestamps[0], float
-        ), "Timestamps need to be instances of python float, got {}".format(
-            type(self.timestamps[0])
-        )
+        # timestamps_path, ext = os.path.splitext(source_path)
+        # timestamps_path += "_timestamps.npy"
+        # print("Laduje timestampy")
+        # try:
+        #     self.timestamps = np.load(timestamps_path)
+        #     print("Zaladowalem timestampy..")
+        # except IOError:
+        #     logger.warning(
+        #         "did not find timestamps file, making timetamps up based on fps and frame count. Frame count and timestamps are not accurate!"
+        #     )
+        #     frame_rate = float(avg_rate)
+        #     self.timestamps = [
+        #         i / frame_rate
+        #         for i in range(
+        #             int(self.container.duration / av.time_base * frame_rate) + 100
+        #         )
+        #     ]  # we are adding some slack.
+        # else:
+        #     logger.debug(
+        #         "Auto loaded %s timestamps from %s"
+        #         % (len(self.timestamps), timestamps_path)
+        #     )
+        # assert isinstance(
+        #     self.timestamps[0], float
+        # ), "Timestamps need to be instances of python float, got {}".format(
+        #     type(self.timestamps[0])
+        # )
         self.timestamps = self.timestamps
 
         # set the pts rate to convert pts to frame index. We use videos with pts writte like indecies.
@@ -191,12 +203,15 @@ class File_Source(Playback_Source, Base_Source):
             self.next_frame = self.buffered_decoder.get_frame()
         else:
             self.next_frame = self._next_frame()
+
+        print(self.next_frame)
+
         f0, f1 = next(self.next_frame), next(self.next_frame)
         self.pts_rate = f1.pts
-        self.seek_to_frame(0)
-        self.average_rate = (self.timestamps[-1] - self.timestamps[0]) / len(
-            self.timestamps
-        )
+        # self.seek_to_frame(0)
+        # self.average_rate = (self.timestamps[-1] - self.timestamps[0]) / len(
+        #     self.timestamps
+        # )
 
         loc, name = os.path.split(os.path.splitext(source_path)[0])
         self._intrinsics = load_intrinsics(loc, name, self.frame_size)
@@ -227,12 +242,12 @@ class File_Source(Playback_Source, Base_Source):
     @property
     @ensure_initialisation(fallback_func=lambda: (640, 480))
     def frame_size(self):
-        return int(self.video_stream.format.width), int(self.video_stream.format.height)
+        return int(192), int(192)
 
     @property
     @ensure_initialisation(fallback_func=lambda: 20)
     def frame_rate(self):
-        return 1.0 / float(self.average_rate)
+        return 20
 
     def get_init_dict(self):
         if self.g_pool.app == "capture":
@@ -254,12 +269,13 @@ class File_Source(Playback_Source, Base_Source):
         return self.current_frame_idx
 
     def get_frame_count(self):
-        return len(self.timestamps)
+        return 5000
 
     @ensure_initialisation()
     def _next_frame(self):
         for packet in self.container.demux(self.video_stream):
             for frame in packet.decode():
+                print(frame)
                 if frame:
                     yield frame
 
@@ -282,6 +298,9 @@ class File_Source(Playback_Source, Base_Source):
             if not frame:
                 break
             index = self.pts_to_idx(frame.pts)
+            print("Frame pts ", frame.pts)
+            print("Przypisuje index.... ", index)
+            print("Timestamps: ", self.timestamps)
             if index == self.target_frame_idx:
                 break
             elif index < self.target_frame_idx:
@@ -303,7 +322,7 @@ class File_Source(Playback_Source, Base_Source):
                 )
                 raise EndofVideoError("Reached end of video file")
         try:
-            timestamp = self.timestamps[index]
+            timestamp = None
         except IndexError:
             logger.info("Reached end of timestamps list.")
             raise EndofVideoError("Reached end of timestamps list.")

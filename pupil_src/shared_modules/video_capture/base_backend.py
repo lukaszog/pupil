@@ -203,7 +203,7 @@ class Base_Manager(Plugin):
         )
 
         # here is where you add all your menu entries.
-        self.menu.label = "Backend Manager"
+        self.menu.label = "Backend Manager :)"
 
 
 class Playback_Source(Base_Source):

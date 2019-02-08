@@ -691,12 +691,12 @@ def eye(
                             }
                         )
 
-                t = frame.timestamp
-                dt, ts = t - ts, t
-                try:
-                    fps_graph.add(1.0 / dt)
-                except ZeroDivisionError:
-                    pass
+                # t = frame.timestamp
+                # dt, ts = t - ts, t
+                # try:
+                #     fps_graph.add(1.0 / dt)
+                # except ZeroDivisionError:
+                #     pass
 
                 if g_pool.writer:
                     g_pool.writer.write_video_frame(frame)
