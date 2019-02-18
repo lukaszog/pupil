@@ -111,7 +111,12 @@ class File_Source(Playback_Source, Base_Source):
             self._initialised = False
             return
 
-        source_path = "http://192.168.1.4:9999"
+        print(source_path)
+        if source_path == "/mnt/c/Users/Lukasz/EMOTIN/pupil/recordings/2019_01_23/000/w.mp4":
+            source_path = "http://192.168.8.104:9898"
+        else:
+            source_path = "http://192.168.8.104:9899"
+
         self.container = av.open(str(source_path))
 
         try:

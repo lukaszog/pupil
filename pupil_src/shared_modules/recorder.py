@@ -312,7 +312,7 @@ class Recorder(System_Plugin_Base):
                 },
             )
 
-        self.video_path = os.path.join(self.rec_path, "world.mp4")
+        self.video_path = os.path.join(self.rec_path, "w.mp4")
         if self.raw_jpeg and self.g_pool.capture.jpeg_support:
             self.writer = JPEG_Writer(self.video_path, self.g_pool.capture.frame_rate)
         elif hasattr(self.g_pool.capture._recent_frame, "h264_buffer"):

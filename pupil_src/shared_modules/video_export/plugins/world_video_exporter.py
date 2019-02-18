@@ -31,7 +31,7 @@ class World_Video_Exporter(VideoExporter):
         super().__init__(g_pool, max_concurrent_tasks=1)
         self.logger = logging.getLogger(__name__)
         self.logger.info("World Video Exporter has been launched.")
-        self.rec_name = "world.mp4"
+        self.rec_name = "w.mp4"
 
     def customize_menu(self):
         self.menu.label = "World Video Exporter"
