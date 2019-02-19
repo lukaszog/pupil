@@ -113,8 +113,10 @@ class File_Source(Playback_Source, Base_Source):
 
         print(source_path)
         if source_path[-8:] == "word.mp4":
+            # ip do swiata
             source_path = "http://192.168.8.104:9898"
         else:
+            # ip do oka
             source_path = "http://192.168.8.104:9899"
 
         self.container = av.open(str(source_path))
