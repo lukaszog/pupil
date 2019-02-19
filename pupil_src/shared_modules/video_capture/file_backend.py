@@ -112,7 +112,7 @@ class File_Source(Playback_Source, Base_Source):
             return
 
         print(source_path)
-        if source_path == "/mnt/c/Users/Lukasz/EMOTIN/pupil/recordings/2019_01_23/000/w.mp4":
+        if source_path[-8:] == "word.mp4":
             source_path = "http://192.168.8.104:9898"
         else:
             source_path = "http://192.168.8.104:9899"
